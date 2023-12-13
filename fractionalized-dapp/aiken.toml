@@ -1,0 +1,14 @@
+name = "gandalfg/fractionalized-dapp"
+version = "0.0.0"
+license = "Apache-2.0"
+description = "Aiken contracts for project 'gandalfg/fractionalized-dapp'"
+
+[repository]
+user = "gandalfg"
+project = "fractionalized-dapp"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "1.7.0"
+source = "github"
