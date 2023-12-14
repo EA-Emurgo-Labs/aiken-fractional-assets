@@ -22,5 +22,9 @@ The datum of the Oracle, will hold information such as, project name, owner, the
 2. B. Same UI form but user has now the option to update the Oracle datum (think how the Oracle datum gets update for new equity share available to be acquired)
     a. Delete oracle option in this form.
 
+### Validators involved (Smart Contracts to build with Aiken)
 
+- `OracleTokenPolicy` - This is the minting policy that mints the NFT that will be hold by the oracle UTXO, to prove validity (state thread)
+- `OracleValidator` - This is the validator that has the UTXO holding the NFT minted by `OracleTokenPolicy` and the `Datum` with all the Oracle's information
+- `FractionalTokensPolicy` - This is the minting policy, that based on the funds provided by a  user, the equivalent fraction tokens that will represent equity share, will be minted. WIth an accompanied NFT reference token
 ### Transaction Flows (CRUCIAL)
