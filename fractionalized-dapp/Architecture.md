@@ -24,9 +24,8 @@ The datum of the Oracle, will hold information such as, project name, owner, the
 
 ### Validators involved (Smart Contracts to build with Aiken)
 
-- `OracleTokenPolicy` - This is the minting policy that mints the NFT that will be hold by the oracle UTXO, to prove validity (state thread)
-- `OracleValidator` - This is the validator that has the UTXO holding the NFT minted by `OracleTokenPolicy` and the `Datum` with all the Oracle's information
-- `FractionalTokensPolicy` - This is the minting policy, that based on the funds provided by a  user, the equivalent fraction tokens that will represent equity share, will be minted. WIth an accompanied NFT reference token.
+- `FractionTokensPolicy` - This is the minting policy that mints the NFT that will be hold by the oracle UTXO, to prove validity (state thread), and the fractional tokens that will represent 1% equity per token (1 fraction = 1% equity, if a project gives max 10%, then 10 fraction tokens will be minted)
+- `OracleValidator` - This is the validator that has the UTXO holding the NFT minted by `FractionTokensPolicy` and the `Datum` with all the Oracle's information
 - `FundraisingValidator` - This is where all the funds provided by users for the project are going to be locked.
 
 
@@ -39,13 +38,16 @@ FundsProvider=`Alice`
 
 `Short description scenario`
 
-To make it super simple for the purpose of this flow, lets assume that the project will request 1000ADA investment for a maximum giveaway equity share of 10%. Which means that if someone provides 1000ada has 10% equity to the company. The way the fractional token works is:
-If ALice provides 1000 ADA she gets 10% equity -> 1 NFT reference token will be minted, with 10 fractional tokens ( 1/10 -> 10%, 1 / `Fractional Tokens`).
-If ALice provides 500ADA she gets 5% equity -> 1 NFT reference token will be minted, with 20 fractional tokens ( 1/20 -> 5%, 1 / `Fractional Tokens`).
-etc. etc. so, the equity ratiois given by the division of 1 (NFT) / Number of Fractional tokens
+To make it super simple for the purpose of this flow, lets assume that the project will request 1000ADA investment for a maximum giveaway equity share of 10%. Which means that if someone provides 1000ada has 10% equity to the company. THat mean
+If ALice provides 1000 ADA she gets 10% equity therefore she can withdraw all 10 fractional tokens.
+If ALice provides 500ADA she gets 5% equity therefore she can withdraw all 5 tokens that represent 1% of ownership each
+etc. etc.
 
 1. Bob registers his project by submitting a transaction to the blockchain. This tx does the following:
     a. Mints an NFT to to be used as the validation mechanism of the Oracles UTXO
     b. That NFT is then locked in the `OracleValidator` under a UTXO with a datum that holds all the information of the fundraising request from the project
 2. Alice now wants to provide funds to the project and receive the Equity Tokens (fractional). She submits a tx to the blockchain which does the following:
-    a. 
+    a. The oracle datum needs to be checked, to see how much equity is available to be given
+    b. The amount of funds that ALice provides is checked against the projects requested amount
+    c. Based on the above ratio the equivalent amount of fractional tokens is minted with the nft
+    d. Alice receives the fractional tokens
