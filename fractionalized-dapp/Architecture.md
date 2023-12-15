@@ -24,7 +24,7 @@ The datum of the Oracle, will hold information such as, project name, owner, the
 
 ### Validators involved (Smart Contracts to build with Aiken)
 
-- `FractionTokensPolicy` - This is the minting policy that mints the NFT that will be hold by the oracle UTXO, to prove validity (state thread), and the fractional tokens that will represent 1% equity per token (1 fraction = 1% equity, if a project gives max 10%, then 10 fraction tokens will be minted)
+- `FractionTokensPolicy` - This is the minting policy that mints the NFT that will be hold by the oracle UTXO, to prove validity (state thread), the reference NFT, and the fractional tokens that will represent 1% equity per token (1 fraction = 1% equity, if a project gives max 10%, then 10 fraction tokens will be minted)
 - `OracleValidator` - This is the validator that has the UTXO holding the NFT minted by `FractionTokensPolicy` and the `Datum` with all the Oracle's information
 - `FundraisingValidator` - This is where all the funds provided by users for the project are going to be locked.
 
@@ -38,7 +38,9 @@ FundsProvider=`Alice`
 
 `Short description scenario`
 
-To make it super simple for the purpose of this flow, lets assume that the project will request 1000ADA investment for a maximum giveaway equity share of 10%. Which means that if someone provides 1000ada has 10% equity to the company. THat mean
+To make it super simple for the purpose of this flow, lets assume that the project will request 1000ADA investment for a maximum giveaway equity share of 10%. Which means that if someone provides 1000ada has 10% equity to the company. That means
+
+\\ Equity Shares
 If ALice provides 1000 ADA she gets 10% equity therefore she can withdraw all 10 fractional tokens.
 If ALice provides 500ADA she gets 5% equity therefore she can withdraw all 5 tokens that represent 1% of ownership each
 etc. etc.
@@ -46,8 +48,15 @@ etc. etc.
 1. Bob registers his project by submitting a transaction to the blockchain. This tx does the following:
     a. Mints an NFT to to be used as the validation mechanism of the Oracles UTXO
     b. That NFT is then locked in the `OracleValidator` under a UTXO with a datum that holds all the information of the fundraising request from the project
+    c. Based on the fundraising request a reference NFT and the fractionalized tokens will be minted from th same minting policy of the oracle nft and they will be locked in the `FundraisingValidator`
 2. Alice now wants to provide funds to the project and receive the Equity Tokens (fractional). She submits a tx to the blockchain which does the following:
     a. The oracle datum needs to be checked, to see how much equity is available to be given
     b. The amount of funds that ALice provides is checked against the projects requested amount
-    c. Based on the above ratio the equivalent amount of fractional tokens is minted with the nft
-    d. Alice receives the fractional tokens
+    c. This tx is basically a spending/consuming transaction. It consumes the UTXO that holds the reference NFT and the fractional tokens, and Alice will get back the analogous amount of fractional tokens based on the funding she provided.
+    d. The Oracle's datum should also be updated here with an updated field showing how much equity has been given/or is available for others to provide funds (any ideas for this welcome)
+
+3. Everyone (in our case alice) can update the Oracle's datum field that shows the equity given/remained available by submitting a TX that gives funds to a project. But only the owner/creator of the Oracle can delete the oracle, or update the rest of the data fields.
+
+4. Only the owner of the project (Bob) who created the oracle when registered the project in the first place, can consume and withdraw the funds from the UTXO under the FundraisingValidator. The logic for this will be more detailed in the Aiken contract.
+
+5. The owner of the project can submit a transaction to delete the Oracle, which will burn all the token (more to think about this, as we need to do something to the funds that have already been provided.)
