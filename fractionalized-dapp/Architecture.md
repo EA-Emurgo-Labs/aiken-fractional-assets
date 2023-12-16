@@ -60,3 +60,16 @@ etc. etc.
 4. Only the owner of the project (Bob) who created the oracle when registered the project in the first place, can consume and withdraw the funds from the UTXO under the FundraisingValidator. The logic for this will be more detailed in the Aiken contract.
 
 5. The owner of the project can submit a transaction to delete the Oracle, which will burn all the token (more to think about this, as we need to do something to the funds that have already been provided.)
+
+
+### Development Plan
+
+1. Wallet integration - Start with Nami
+2. ContextAPI to pass wallet data around the dapp
+3. Start developing the minting policy with Aiken
+4. Start developing the validator of the oracle with Aiken
+5. Start developing the fundraising validator with Aiken
+6. Start developing the offchain code with lucid
+
+1-3 -> Complete in December
+4-6 -> Complete by 15th of January
