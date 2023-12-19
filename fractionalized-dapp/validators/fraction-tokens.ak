@@ -15,14 +15,9 @@ type VerificationKeyHash =
 type NFTHash =
   Hash<Blake2b_224, Script>
 
-type Action {
+type TokenAction {
   Mint
   Burn
-}
-
-type LockDatum {
-  nftLink: NFTHash,
-  tokenShareRemained: Int,
 }
 
 // When a user registers a project fundraise request
@@ -37,6 +32,12 @@ type OracleDatum {
 // divide the amount given by fundRequest, and the percentage
 // should be the percent against the maxPercentageShar
 
+// Helper function for signature check
+
+fn tx_signed_by(tx: Transaction, pkh: VerificationKeyHash) {
+  list.has(tx.extra_signatories, pkh)
+}
+
 // Minting policy validator
 
 validator(
@@ -47,7 +48,7 @@ validator(
 ) {
   fn mint(
     datum dt: OracleDatum,
-    redeemer rd: Action,
+    redeemer rd: TokenAction,
     ctx: ScriptContext,
   ) -> Bool {
     let ScriptContext { transaction, purpose } = ctx
@@ -55,8 +56,12 @@ validator(
     let Transaction { inputs, outputs, mint, reference_inputs, .. } =
       transaction
 
+    // Extract datum from Input
     expect Some(oneInput) = list.head(inputs)
-    expect theOracleOne = oneInput.output.datum
+    expect InlineDatum(theOracleOne) = oneInput.output.datum
+    expect orclDtm: OracleDatum = theOracleOne
+    let OracleDatum { projectOwner, maxPercentageShare, nftLink, fundRequested } =
+      orclDtm
 
     expect [(ref_asset_name, ref_amount), (frac_asset_name, frac_amount)] =
       mint
@@ -64,14 +69,18 @@ validator(
         |> value.tokens(policy_id)
         |> dict.to_list()
 
-    // expect tx_signed_by(transaction, owner)
     when rd is {
       Mint -> {
         expect
           list.any(inputs, fn(input) { input.output_reference == utxo_ref })
-        ref_amount == 1
+        expect tx_signed_by(transaction, owner)
+        ref_amount == 1 && frac_amount == maxPercentageShare
       }
-      Burn -> todo @"burn the asset"
+      Burn -> {
+        expect tx_signed_by(transaction, projectOwner)
+        ref_amount == -1 && frac_amount == -maxPercentageShare
+      }
     }
   }
 }
+// Validator for locking the newly minted tokens so other activities can occur

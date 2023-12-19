@@ -12,54 +12,189 @@
   },
   "validators": [
     {
-      "title": "test_101.fake",
+      "title": "fraction_tokens.mint",
+      "datum": {
+        "title": "datum",
+        "schema": {
+          "$ref": "#/definitions/fraction_tokens~1OracleDatum"
+        }
+      },
+      "redeemer": {
+        "title": "redeemer",
+        "schema": {
+          "$ref": "#/definitions/fraction_tokens~1Action"
+        }
+      },
+      "parameters": [
+        {
+          "title": "nft_name",
+          "schema": {
+            "$ref": "#/definitions/ByteArray"
+          }
+        },
+        {
+          "title": "frac_name",
+          "schema": {
+            "$ref": "#/definitions/ByteArray"
+          }
+        },
+        {
+          "title": "utxo_ref",
+          "schema": {
+            "$ref": "#/definitions/aiken~1transaction~1OutputReference"
+          }
+        },
+        {
+          "title": "owner",
+          "schema": {
+            "$ref": "#/definitions/ByteArray"
+          }
+        }
+      ],
+      "compiledCode": "59033d010000323232323232323232232232223222232323253330103232323253330143370e900018098008991919191919191919191919299981019b8748000c07c0044c8c8c94ccc08ccdc3a400860440022646464646464646464646464646464a66606a60700042646464646464a66607066e1d200000215333038323300100102222533303d00114a026464a66607866ebcc104c0e80080d45288998020020009820801181f8008a99981c198008138178a99981c19b87005480084cdc38018068a501616153330383300102702f153330383370e00a9000899b870033370290000068a5016223322323300100100322533304000114a026464a66607e66e3c00801452889980200200098220011bae30420013758607c607e607e607e607e607e607e607e607e606e004002606a0566eb4c0dc010dd7181a8019bad3035004375c60660062c606c002606c004606800264664464a66606466e1d2002001100213756606e60600066060004646600200200444a666068002298103d87a800013232323253330353371e040004266e95200033039374c00297ae01330060060033756606c0066eb8c0d0008c0e0008c0d80052f5bded8c0646600200202244a666066002297adef6c6013232323253330343371e911000021003133038337606ea4008dd3000998030030019bab3035003375c6066004606e004606a0026eb8c0c8004c0c8008dd6981800098180011bad302e001302e002375c605800260480046030002605200260420022c604e605060506040604e60506040002604c002603c0022ca6660440102980103d87a800013374a900019811981200425eb80dd59811800981180098110011bac302000130200023758603c002603c0046eb0c070004c050014dd7180d00098090008b180c000980c001180b00098070020a4c26cac64a66602066e1d200000115333013300e00514985854ccc040cdc3a40040022a666026601c00a2930b0b18070021800802119299980799b87480000044c8c8c8c8c8c8c8c94ccc068c07400852616375c603600260360046eb4c064004c064008dd6980b800980b8011bae3015001300d00216300d001375c0026eb8004dd7000918029baa001230033754002ae6955ceaab9e5573eae815d0aba201",
+      "hash": "baec7355753035ebc045602c1a57b3bf15e55a4a2d329688a0d18162"
+    },
+    {
+      "title": "lock_validator.fake",
       "datum": {
         "title": "dt",
         "schema": {
-          "$ref": "#/definitions/test_101~1Datum"
+          "$ref": "#/definitions/aiken~1transaction~1Datum"
         }
       },
       "redeemer": {
         "title": "rd",
         "schema": {
-          "$ref": "#/definitions/test_101~1Redeemer"
+          "$ref": "#/definitions/Data"
         }
       },
-      "compiledCode": "587f0100003232323232323232222323253330083370e90012400429309b2b19299980419b87480000044c8c94ccc034c03c00852616375a601a002600c0082c600c00664a66600e66e1d200000113232533300c300e002149858dd6980600098028020b1802801918029baa001230033754002ae6955ceaab9e5573eae855d101",
-      "hash": "f76f3553ee5c19f150a4116238236403db7a1a3a139c79cc0a9a416c"
+      "compiledCode": "5886010000323232323232322223253330063370e90012400429309b2b19299980319b874800000454ccc024c01401052616153330063370e900100089919299980598068010a4c2c6eb8c02c004c01401054ccc018cdc3a400800226464a666016601a0042930b180580098028020b18031baa003230043754002ae6955ceaab9e5573eae855d11",
+      "hash": "b16ebcd28dd8c3b09dc5e07c0e989e9076298a7e98385bfd85fe7cea"
     }
   ],
   "definitions": {
+    "ByteArray": {
+      "dataType": "bytes"
+    },
+    "Data": {
+      "title": "Data",
+      "description": "Any Plutus data."
+    },
     "Int": {
       "dataType": "integer"
     },
-    "test_101/Datum": {
+    "aiken/transaction/Datum": {
       "title": "Datum",
+      "description": "An output `Datum`.",
       "anyOf": [
         {
-          "title": "Datum",
+          "title": "NoDatum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        },
+        {
+          "title": "DatumHash",
+          "description": "A datum referenced by its hash digest.",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "$ref": "#/definitions/ByteArray"
+            }
+          ]
+        },
+        {
+          "title": "InlineDatum",
+          "description": "A datum completely inlined in the output.",
+          "dataType": "constructor",
+          "index": 2,
+          "fields": [
+            {
+              "$ref": "#/definitions/Data"
+            }
+          ]
+        }
+      ]
+    },
+    "aiken/transaction/OutputReference": {
+      "title": "OutputReference",
+      "description": "An `OutputReference` is a unique reference to an output on-chain. The `output_index`\n corresponds to the position in the output list of the transaction (identified by its id)\n that produced that output",
+      "anyOf": [
+        {
+          "title": "OutputReference",
           "dataType": "constructor",
           "index": 0,
           "fields": [
             {
-              "title": "a",
+              "title": "transaction_id",
+              "$ref": "#/definitions/aiken~1transaction~1TransactionId"
+            },
+            {
+              "title": "output_index",
               "$ref": "#/definitions/Int"
             }
           ]
         }
       ]
     },
-    "test_101/Redeemer": {
-      "title": "Redeemer",
+    "aiken/transaction/TransactionId": {
+      "title": "TransactionId",
+      "description": "A unique transaction identifier, as the hash of a transaction body. Note that the transaction id\n isn't a direct hash of the `Transaction` as visible on-chain. Rather, they correspond to hash\n digests of transaction body as they are serialized on the network.",
       "anyOf": [
         {
-          "title": "Redeemer",
+          "title": "TransactionId",
           "dataType": "constructor",
           "index": 0,
           "fields": [
             {
-              "title": "a",
+              "title": "hash",
+              "$ref": "#/definitions/ByteArray"
+            }
+          ]
+        }
+      ]
+    },
+    "fraction_tokens/Action": {
+      "title": "Action",
+      "anyOf": [
+        {
+          "title": "Mint",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": []
+        },
+        {
+          "title": "Burn",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": []
+        }
+      ]
+    },
+    "fraction_tokens/OracleDatum": {
+      "title": "OracleDatum",
+      "anyOf": [
+        {
+          "title": "OracleDatum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "projectOwner",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "fundRequested",
               "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "maxPercentageShare",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "nftLink",
+              "$ref": "#/definitions/ByteArray"
             }
           ]
         }
