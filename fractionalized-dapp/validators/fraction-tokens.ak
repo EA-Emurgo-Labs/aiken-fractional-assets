@@ -134,20 +134,21 @@ validator() {
       })
 
     expect providedAmount = value.lovelace_of(oneOutput.value)
-
     expect Some(ownersHash) = list.head(extra_signatories)
 
-    expect [(fract_name, fract_amount)] = todo @"retrieve"
-      // outputs
-      //  |> value.flatten
-      //  |> value.tokens(cs)
-      //  |> dict.to_list()
+    // Get the assets from the output of the transaction
+    expect Some(txOut) = list.head(outputs)
+
+
+    expect [(ada_policyid,ada_name, ada_amount),(fract_policyid, fract_name, fract_amount)] = 
+      txOut.value
+       |> value.flatten
 
 
     when rd is {
       ProvideFunding -> {
 
-        tx_signed_by(transaction, ownersHash) && calculate_ratio(frac_amount, fundRequested, providedAmount)
+        tx_signed_by(transaction, ownersHash) && calculate_ratio(fract_amount, fundRequested, providedAmount)
         
       }
       WithdrawFund -> todo @"provide datum/redeemer and withdraw investment"
