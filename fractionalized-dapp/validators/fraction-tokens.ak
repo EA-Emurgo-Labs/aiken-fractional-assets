@@ -20,6 +20,17 @@ type TokenAction {
   Burn
 }
 
+type LockAction {
+  ProvideFunding //for investor to unlock fractional token
+  WithdrawFund // for project owner to withdraw investment funds
+}
+
+type LockDatum {
+  projectOwner: VerificationKeyHash,
+  nftLink: NFTHash,
+
+}
+
 // When a user registers a project fundraise request
 // An oracle is holding the datum with all the info fields
 type OracleDatum {
@@ -27,6 +38,11 @@ type OracleDatum {
   fundRequested: Int,
   maxPercentageShare: Int,
   nftLink: NFTHash,
+}
+
+type OracleAction {
+  Delete
+  Update
 }
 
 // divide the amount given by fundRequest, and the percentage
@@ -84,3 +100,31 @@ validator(
   }
 }
 // Validator for locking the newly minted tokens so other activities can occur
+// 1. Project owner when minting the tokens mentioned above, receives the NFT to her wallet
+// But send the fractional tokens to the locked validator
+// 2. The investor sends ADA to the lock validator, and gets back the correct portion of fraction 
+// tokens.
+
+validator() {
+  fn lockValid(datum dt: LockDatum, redeemer rd: LockAction,ctx: ScriptContext) -> Bool {
+
+    expect ScriptContext {transaction, purpose} = ctx 
+
+    // For provide funding, check signature and ratio between ada and fraction shares
+    // We need access to inputs and outputs
+
+    expect Transaction { inputs, outputs, reference_inputs, extra_signatories, ..} = transaction
+
+    expect Some(refInput) = list.head(reference_inputs)
+    expect InlineDatum(therefOne) = refInput.output.datum
+    expect orclDtm: OracleDatum = therefOne
+    let OracleDatum { projectOwner, maxPercentageShare, nftLink, fundRequested } =
+      orclDtm
+
+
+    when rd is {
+      ProvideFunding -> todo @"lock ADA retrieve fractions"
+      WithdrawFund -> todo @"provide datum/redeemer and withdraw investment"
+    }
+  }
+}
