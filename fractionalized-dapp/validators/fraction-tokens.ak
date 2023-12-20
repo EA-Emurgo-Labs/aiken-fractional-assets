@@ -1,5 +1,6 @@
 use aiken/bytearray
 use aiken/dict
+use aiken/string
 use aiken/hash.{Blake2b_224, Hash}
 use aiken/list
 use aiken/transaction.{
@@ -52,6 +53,13 @@ type OracleAction {
 
 fn tx_signed_by(tx: Transaction, pkh: VerificationKeyHash) {
   list.has(tx.extra_signatories, pkh)
+}
+
+fn calculate_ratio(token_frac tf: Int, fund_requested fr: Int, fund_provided fp: Int) -> Bool {
+
+  fp / fr  == tf / 100
+
+
 }
 
 // Minting policy validator
@@ -121,9 +129,27 @@ validator() {
     let OracleDatum { projectOwner, maxPercentageShare, nftLink, fundRequested } =
       orclDtm
 
+    expect Some(oneOutput) = list.find(outputs, fn(output) { 
+      list.has(value.policies(output.value), #"")
+      })
+
+    expect providedAmount = value.lovelace_of(oneOutput.value)
+
+    expect Some(ownersHash) = list.head(extra_signatories)
+
+    expect [(fract_name, fract_amount)] = todo @"retrieve"
+      // outputs
+      //  |> value.flatten
+      //  |> value.tokens(cs)
+      //  |> dict.to_list()
+
 
     when rd is {
-      ProvideFunding -> todo @"lock ADA retrieve fractions"
+      ProvideFunding -> {
+
+        tx_signed_by(transaction, ownersHash) && calculate_ratio(frac_amount, fundRequested, providedAmount)
+        
+      }
       WithdrawFund -> todo @"provide datum/redeemer and withdraw investment"
     }
   }
