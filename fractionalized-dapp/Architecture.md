@@ -73,3 +73,13 @@ etc. etc.
 
 1-3 -> Complete in December
 4-6 -> Complete by 15th of January
+
+
+### Oracle Related Flow
+
+1. User submits a tx to register a project
+2. An NFT and the fraction tokens are minted in this transaction and the Oracle datum gets created and stored in a utxo
+3. THe fraction tokens are sent and locked under the LockValidator
+4. The NFT and the datum are at a utxo under the Oracle Validator which is responsible for creation, update and deletion of the Oracle
+5. A user provides funding to a project in exchange for the fraction tokens. The user receives the equivalent amount. Those tokens cannot be faked by others, they are minted using same UTXO reference as the original NFT.
+6. A project owner withdraws funds from a project. He should be the creator of the original NFT related to the project to make that happen.
