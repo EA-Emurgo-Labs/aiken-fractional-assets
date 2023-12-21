@@ -42,6 +42,7 @@ type OracleDatum {
 type OracleAction {
   Delete
   Update
+  Create
 }
 
 // divide the amount given by fundRequest, and the percentage
@@ -111,7 +112,7 @@ validator(
 // 2. The investor sends ADA to the lock validator, and gets back the correct portion of fraction 
 // tokens.
 
-validator() {
+validator(owner: VerificationKeyHash) {
   fn lockValid(datum dt: LockDatum, redeemer rd: LockAction,ctx: ScriptContext) -> Bool {
 
     expect ScriptContext {transaction, purpose} = ctx 
@@ -151,7 +152,38 @@ validator() {
         
       }
       // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
-      WithdrawFund -> tx_signed_by(transaction, ownersHash) && value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(txInput.output.value)
+      WithdrawFund -> projectOwner == owner && tx_signed_by(transaction, ownersHash) && value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(txInput.output.value)
     }
+  }
+}
+
+// Oracle validator, checks the NFT token ownership
+
+validator(owner: VerificationKeyHash, cs: value.PolicyId) {
+
+  fn oraclev(datum dt: OracleDatum, redeemer rd: OracleAction, ctx: ScriptContext) -> Bool {
+
+    expect tx.ScriptContext { transaction, purpose} = ctx 
+    expect tx.Transaction { mint, inputs, outputs, reference_inputs, ..} = transaction
+
+    // find() returns OPtion<a>
+
+
+    expect Some(nftOutput) = list.find(outputs, fn(output) {
+      expect Some(assets) = list.head(value.flatten(value.without_lovelace(output.value)))
+
+      expect (pid,asset_name,amount) = assets
+
+      amount == 1
+    })
+
+    expect Some(nftPolicy) = list.head(value.policies(nftOutput.value))
+
+    when rd is {
+      Create -> nftPolicy == cs
+      Update -> todo @"check the x and the y"
+      Delete -> todo @"check that the owner is minting -1 NFTs"
+    }
+
   }
 }
