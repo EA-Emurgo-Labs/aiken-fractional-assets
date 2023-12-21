@@ -9,7 +9,6 @@ use aiken/transaction.{
 use aiken/transaction/credential.{Script, VerificationKey}
 use aiken/transaction/value
 
-// PKH 
 type VerificationKeyHash =
   Hash<Blake2b_224, VerificationKey>
 
@@ -28,8 +27,7 @@ type LockAction {
 
 type LockDatum {
   projectOwner: VerificationKeyHash,
-  nftLink: NFTHash,
-
+  nftLink: NFTHash, 
 }
 
 // When a user registers a project fundraise request
@@ -138,6 +136,7 @@ validator() {
 
     // Get the assets from the output of the transaction
     expect Some(txOut) = list.head(outputs)
+    expect Some(txInput) = list.head(inputs)
 
 
     expect [(ada_policyid,ada_name, ada_amount),(fract_policyid, fract_name, fract_amount)] = 
@@ -151,7 +150,8 @@ validator() {
         tx_signed_by(transaction, ownersHash) && calculate_ratio(fract_amount, fundRequested, providedAmount)
         
       }
-      WithdrawFund -> todo @"provide datum/redeemer and withdraw investment"
+      // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
+      WithdrawFund -> tx_signed_by(transaction, ownersHash) && value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(txInput.output.value)
     }
   }
 }
