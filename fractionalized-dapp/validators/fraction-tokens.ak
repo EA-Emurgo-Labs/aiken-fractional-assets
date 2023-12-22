@@ -179,9 +179,21 @@ validator(owner: VerificationKeyHash, cs: value.PolicyId) {
 
     expect Some(nftPolicy) = list.head(value.policies(nftOutput.value))
 
+    // Get datum of the input, only one in UPDATE action
+    expect Some(theTxInput) = list.head(inputs)
+    expect InlineDatum(theDatum) = theTxInput.output.datum
+    expect theInputOracleDatum: OracleDatum = theDatum
+
+    // Get datum of the output, only one in UPDATE action with new datum
+
+    expect Some(theTxOutput) = list.head(outputs)
+    expect InlineDatum(theOutDatum) = theTxOutput.datum
+    expect theOracleOutputDatum: OracleDatum = theOutDatum
+
+
     when rd is {
       Create -> nftPolicy == cs
-      Update -> todo @"check the x and the y"
+      Update -> tx_signed_by(transaction, theInputOracleDatum.projectOwner) && theInputOracleDatum != theOracleOutputDatum
       Delete -> todo @"check that the owner is minting -1 NFTs"
     }
 
