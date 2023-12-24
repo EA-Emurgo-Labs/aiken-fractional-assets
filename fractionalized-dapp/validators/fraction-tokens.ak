@@ -128,10 +128,10 @@ validator(owner: VerificationKeyHash) {
     let OracleDatum { projectOwner, maxPercentageShare, nftLink, fundRequested } =
       orclDtm
 
+    // Here we are looking for the VALUE of ADA asset to retrieve the amount the user invests in project
     expect Some(oneOutput) = list.find(outputs, fn(output) { 
       list.has(value.policies(output.value), #"")
       })
-
     expect providedAmount = value.lovelace_of(oneOutput.value)
     expect Some(ownersHash) = list.head(extra_signatories)
 
@@ -166,9 +166,8 @@ validator(owner: VerificationKeyHash, cs: value.PolicyId) {
     expect tx.ScriptContext { transaction, purpose} = ctx 
     expect tx.Transaction { mint, inputs, outputs, reference_inputs, ..} = transaction
 
-    // find() returns OPtion<a>
-
-
+    // list.find() returns Option<a>
+    // Here we are looking for the output that has the NFT == 1
     expect Some(nftOutput) = list.find(outputs, fn(output) {
       expect Some(assets) = list.head(value.flatten(value.without_lovelace(output.value)))
 
@@ -177,6 +176,8 @@ validator(owner: VerificationKeyHash, cs: value.PolicyId) {
       amount == 1
     })
 
+
+    // Get the NNFT policy from the VALUE
     expect Some(nftPolicy) = list.head(value.policies(nftOutput.value))
 
     // Get datum of the input, only one in UPDATE action
@@ -184,17 +185,23 @@ validator(owner: VerificationKeyHash, cs: value.PolicyId) {
     expect InlineDatum(theDatum) = theTxInput.output.datum
     expect theInputOracleDatum: OracleDatum = theDatum
 
-    // Get datum of the output, only one in UPDATE action with new datum
-
+    // Get datum of the output, only one output in UPDATE action with new datum
     expect Some(theTxOutput) = list.head(outputs)
     expect InlineDatum(theOutDatum) = theTxOutput.datum
     expect theOracleOutputDatum: OracleDatum = theOutDatum
+
+    // When Deleting Oracle, we basically burn the NFT and remove datum
+    expect [(asset_name, amount)] =
+      mint
+        |> value.from_minted_value
+        |> value.tokens(cs)
+        |> dict.to_list()
 
 
     when rd is {
       Create -> nftPolicy == cs
       Update -> tx_signed_by(transaction, theInputOracleDatum.projectOwner) && theInputOracleDatum != theOracleOutputDatum
-      Delete -> todo @"check that the owner is minting -1 NFTs"
+      Delete -> tx_signed_by(transaction, theInputOracleDatum.projectOwner) && amount == -1
     }
 
   }
