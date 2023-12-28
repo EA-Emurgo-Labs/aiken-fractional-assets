@@ -84,3 +84,11 @@ etc. etc.
 5. A user provides funding to a project in exchange for the fraction tokens. The user receives the equivalent amount. Those tokens cannot be faked by others, they are minted using same UTXO reference as the original NFT.
 6. A project owner withdraws funds from a project. He should be the creator of the original NFT related to the project to make that happen.
 7. An Oracle can be created/deleted/updated by its creator only.
+
+
+### Transaction Lucid Flow & Data
+
+1. Parse the user input data from the fields
+2. COnstruct the correct data type for validator datums
+3. Start with registering the oracle and using it as a reference input
+4. Then provide liquidity to a project by submitting a TX
