@@ -92,3 +92,16 @@ etc. etc.
 2. COnstruct the correct data type for validator datums
 3. Start with registering the oracle and using it as a reference input
 4. Then provide liquidity to a project by submitting a TX
+
+
+### Data structures that each validator gets
+
+type OracleDatum {
+  projectOwner: VerificationKeyHash,
+  fundRequested: Int,
+  maxPercentageShare: Int,
+  nftLink: NFTHash,
+}
+
+A. the info above needs to be provided by the project owner when registering the project.
+B. The token names need to also be generated and submitted for minting transaction.
