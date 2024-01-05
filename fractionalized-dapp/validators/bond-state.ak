@@ -1,6 +1,8 @@
 use aiken/list
-use aiken/transaction.{InlineDatum, ScriptContext, Transaction} as tx
+use aiken/transaction.{InlineDatum,
+  Output, ScriptContext, Spend, Transaction} as tx
 use aiken/transaction/credential.{Address}
+use aiken/transaction/value.{AssetName, PolicyId}
 use bond/types.{AssetClass, BondStateDatum, ProjectOracleDatum}
 
 /// Bond state validator which checks if total bond sold is correct or not 
@@ -14,7 +16,7 @@ validator(bond_state_asset: AssetClass, bond_token_asset: AssetClass) {
   ) -> Bool {
     let (b_pid, b_asst_name) = bond_state_asset
     let (bond_token_pid, bond_asset_name) = bond_token_asset
-    let Transaction { inputs, outputs, reference_inputs, minted_value, .. } =
+    let Transaction { inputs, outputs, reference_inputs, mint, .. } =
       ctx.transaction
     expect Spend(utxo_ref) = ctx.purpose
     expect Some(own_input) = tx.find_input(inputs, utxo_ref)
@@ -25,12 +27,12 @@ validator(bond_state_asset: AssetClass, bond_token_asset: AssetClass) {
     when own_output is {
       Some(op) -> {
         expect minted_bond_token_qty =
-          minted_value
+          mint
             |> value.from_minted_value()
             |> value.quantity_of(bond_token_pid, bond_asset_name)
 
-        let InlineDatum(own_output_data) = own_output.datum
-        let own_op_bond_st_dtm: BondStateDatum = own_output_data
+        expect InlineDatum(own_output_data) = op.datum
+        expect own_op_bond_st_dtm: BondStateDatum = own_output_data
 
         let must_have_state_token_in_inputs =
           must_include_bond_token_with_qty(

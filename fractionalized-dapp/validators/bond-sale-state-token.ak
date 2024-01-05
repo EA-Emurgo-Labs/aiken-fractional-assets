@@ -1,7 +1,7 @@
 use aiken/dict
 use aiken/list
 use aiken/option
-use aiken/transaction.{Output, ScriptContext, Transaction} as tx
+use aiken/transaction.{InlineDatum, Output, ScriptContext, Transaction} as tx
 use aiken/transaction/credential.{Address}
 use aiken/transaction/value.{AssetName, PolicyId}
 use bond/types.{AssetClass, BondStateDatum, ProjectOracleDatum}
@@ -58,7 +58,7 @@ fn handle_bond_state_mint(
   bond_sale_address: Address,
   transaction: Transaction,
 ) -> Bool {
-  let Transaction { outputs, extra_signatories, .. } = transaction
+  let Transaction { outputs, extra_signatories, mint, .. } = transaction
 
   expect Some(project_oracle_data) =
     outputs
