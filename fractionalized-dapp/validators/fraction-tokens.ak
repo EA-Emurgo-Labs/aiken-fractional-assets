@@ -190,7 +190,7 @@ validator(owner: VerificationKeyHash) {
 
 // Oracle validator, checks the NFT token ownership
 
-validator {
+validator(owner: VerificationKeyHash) {
   fn oraclev(
     datum dt: OracleDatum,
     redeemer rd: OracleAction,
