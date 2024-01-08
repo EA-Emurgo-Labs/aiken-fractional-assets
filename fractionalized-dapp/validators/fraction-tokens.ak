@@ -190,7 +190,7 @@ validator(owner: VerificationKeyHash) {
 
 // Oracle validator, checks the NFT token ownership
 
-validator(owner: VerificationKeyHash, cs: value.PolicyId) {
+validator {
   fn oraclev(
     datum dt: OracleDatum,
     redeemer rd: OracleAction,
@@ -199,6 +199,13 @@ validator(owner: VerificationKeyHash, cs: value.PolicyId) {
     expect tx.ScriptContext { transaction, purpose } = ctx
     expect tx.Transaction { mint, inputs, outputs, reference_inputs, .. } =
       transaction
+    let OracleDatum {
+      projectOwner,
+      projectName,
+      maxPercentageShare,
+      nftLink,
+      fundRequested,
+    } = dt
 
     // list.find() returns Option<a>
     // Here we are looking for the output that has the NFT == 1
@@ -232,11 +239,11 @@ validator(owner: VerificationKeyHash, cs: value.PolicyId) {
     expect [(asset_name, amount)] =
       mint
         |> value.from_minted_value
-        |> value.tokens(cs)
+        |> value.tokens(nftLink)
         |> dict.to_list()
 
     when rd is {
-      Create -> nftPolicy == cs
+      Create -> nftPolicy == nftLink
       Update ->
         tx_signed_by(transaction, theInputOracleDatum.projectOwner) && theInputOracleDatum != theOracleOutputDatum
       Delete ->
