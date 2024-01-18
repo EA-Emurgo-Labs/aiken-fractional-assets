@@ -74,11 +74,7 @@ validator(
   utxo_ref: OutputReference,
   owner: VerificationKeyHash,
 ) {
-  fn mint(
-    datum dt: OracleDatum,
-    redeemer rd: TokenAction,
-    ctx: ScriptContext,
-  ) -> Bool {
+  fn mint(redeemer rd: TokenAction, ctx: ScriptContext) -> Bool {
     let ScriptContext { transaction, purpose } = ctx
     expect tx.Mint(policy_id) = purpose
     let Transaction { inputs, outputs, mint, reference_inputs, .. } =
