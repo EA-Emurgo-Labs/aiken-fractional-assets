@@ -33,6 +33,14 @@ type LockDatum {
   nftLink: NFTHash,
 }
 
+type Action {
+  a: Int,
+  //nft
+  b: Int,
+}
+
+// fracts
+
 // When a user registers a project fundraise request
 // An oracle is holding the datum with all the info fields
 type OracleDatum {
@@ -103,12 +111,34 @@ validator(
         expect
           list.any(inputs, fn(input) { input.output_reference == utxo_ref })
         expect tx_signed_by(transaction, owner)
-        ref_amount == 1 && frac_amount == maxPercentageShare
+        let uniqueness = ref_amount == 1
+        let ownership = frac_amount == maxPercentageShare
+
+        uniqueness? && ownership?
       }
       Burn -> {
         expect tx_signed_by(transaction, projectOwner)
-        ref_amount == -1 && frac_amount == -maxPercentageShare
+        let uniqueness = ref_amount == -1
+        let ownership = frac_amount == -maxPercentageShare
+
+        uniqueness? && ownership?
       }
+    }
+  }
+}
+
+// Fake mint
+
+validator {
+  fn fakemint(redeemer: TokenAction, ctx: ScriptContext) -> Bool {
+    let ScriptContext { transaction, purpose } = ctx
+    expect tx.Mint(policy_id) = purpose
+    let Transaction { inputs, outputs, mint, reference_inputs, .. } =
+      transaction
+
+    when redeemer is {
+      Mint -> 1 == 1
+      Burn -> 1 == 1
     }
   }
 }
