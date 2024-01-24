@@ -99,13 +99,13 @@ validator(
         expect
           list.any(inputs, fn(input) { input.output_reference == utxo_ref })
         expect tx_signed_by(transaction, owner)
-        1 == 1
+        ref_amount == 1
       }
 
       // ref_amount == 1
       Burn -> {
         expect tx_signed_by(transaction, owner)
-        1 == 1
+        ref_amount == -1
       }
     }
     // ref_amount == -1
