@@ -82,48 +82,33 @@ validator(
   utxo_ref: OutputReference,
   owner: VerificationKeyHash,
 ) {
-  fn mint(redeemer rd: TokenAction, ctx: ScriptContext) -> Bool {
+  fn mint(rdmr: TokenAction, ctx: ScriptContext) -> Bool {
     let ScriptContext { transaction, purpose } = ctx
     expect tx.Mint(policy_id) = purpose
     let Transaction { inputs, outputs, mint, reference_inputs, .. } =
       transaction
-
-    // Extract datum from Input
-    expect Some(oneInput) = list.head(inputs)
-    expect InlineDatum(theOracleOne) = oneInput.output.datum
-    expect orclDtm: OracleDatum = theOracleOne
-    let OracleDatum {
-      projectOwner,
-      projectName,
-      maxPercentageShare,
-      nftLink,
-      fundRequested,
-    } = orclDtm
 
     expect [(ref_asset_name, ref_amount), (frac_asset_name, frac_amount)] =
       mint
         |> value.from_minted_value
         |> value.tokens(policy_id)
         |> dict.to_list()
-
-    when rd is {
+    when rdmr is {
       Mint -> {
+        trace @"minting"
         expect
           list.any(inputs, fn(input) { input.output_reference == utxo_ref })
         expect tx_signed_by(transaction, owner)
-        let uniqueness = ref_amount == 1
-        let ownership = frac_amount == maxPercentageShare
-
-        uniqueness? && ownership?
+        1 == 1
       }
-      Burn -> {
-        expect tx_signed_by(transaction, projectOwner)
-        let uniqueness = ref_amount == -1
-        let ownership = frac_amount == -maxPercentageShare
 
-        uniqueness? && ownership?
+      // ref_amount == 1
+      Burn -> {
+        expect tx_signed_by(transaction, owner)
+        1 == 1
       }
     }
+    // ref_amount == -1
   }
 }
 
