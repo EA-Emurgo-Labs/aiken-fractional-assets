@@ -134,7 +134,7 @@ validator {
 // 2. The investor sends ADA to the lock validator, and gets back the correct portion of fraction 
 // tokens.
 
-validator(owner: VerificationKeyHash) {
+validator {
   fn lockValid(
     datum dt: LockDatum,
     redeemer rd: LockAction,
@@ -192,9 +192,9 @@ validator(owner: VerificationKeyHash) {
         )
       // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
       WithdrawFund ->
-        projectOwner == owner && tx_signed_by(transaction, ownersHash) && value.lovelace_of(
-          txOut.value,
-        ) * 10 <= value.lovelace_of(txInput.output.value)
+        projectOwner == ownersHash && value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(
+          txInput.output.value,
+        )
     }
   }
 }
