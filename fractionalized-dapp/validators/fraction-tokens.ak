@@ -184,24 +184,33 @@ validator {
         |> value.flatten
 
     when rd is {
-      ProvideFunding ->
-        tx_signed_by(transaction, ownersHash) && calculate_ratio(
-          fract_amount,
-          fundRequested,
-          providedAmount,
-        )
-      // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
-      WithdrawFund ->
-        projectOwner == ownersHash && value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(
-          txInput.output.value,
-        )
+      ProvideFunding -> True
+      WithdrawFund -> True
     }
+    // when rd is {
+    //   ProvideFunding ->
+    //     tx_signed_by(transaction, ownersHash)? && calculate_ratio(
+    //       fract_amount,
+    //       fundRequested,
+    //       providedAmount,
+    //     )?
+    //   // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
+    //   WithdrawFund -> {
+    //     let ownerCheck = projectOwner == ownersHash
+    //     let computationCheck =
+    //       value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(
+    //         txInput.output.value,
+    //       )
+
+    //     ownerCheck? && computationCheck?
+    //   }
+    // }
   }
 }
 
 // Oracle validator, checks the NFT token ownership
 
-validator(owner: VerificationKeyHash) {
+validator {
   fn oraclev(
     datum dt: OracleDatum,
     redeemer rd: OracleAction,
