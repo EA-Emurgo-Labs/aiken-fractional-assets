@@ -22,9 +22,12 @@ type TokenAction {
 
 type LockAction {
   ProvideFunding
-  //for investor to unlock fractional token
   WithdrawFund
 }
+
+//for investor to unlock fractional tokens
+// 0 is fund it
+// 1 is withdraw
 
 // for project owner to withdraw investment funds
 
@@ -134,56 +137,83 @@ validator {
 // 2. The investor sends ADA to the lock validator, and gets back the correct portion of fraction 
 // tokens.
 
+// Recommended from TXPIPE
+
+// validator {
+//   fn lockValid(
+//     datum: Data,
+//     rdmr: Data,
+//     ctx: ScriptContext,
+//   ) -> Bool {
+//   expect datum: LockDatum = datum
+//   expect rdmr: LockAction = rdmr
+
+type TDatum {
+  a: Int,
+}
+
+type TAction {
+  One
+}
+
+type RedeemerAction {
+  msg: ByteArray,
+}
+
 validator {
-  fn lockValid(
-    datum dt: LockDatum,
-    redeemer rd: LockAction,
-    ctx: ScriptContext,
-  ) -> Bool {
-    expect ScriptContext { transaction, purpose } = ctx
-
-    // For provide funding, check signature and ratio between ada and fraction shares
-    // We need access to inputs and outputs
-    expect Transaction {
-      inputs,
-      outputs,
-      reference_inputs,
-      extra_signatories,
-      ..
-    } = transaction
-
-    expect Some(refInput) = list.head(reference_inputs)
-    expect InlineDatum(therefOne) = refInput.output.datum
-    expect orclDtm: OracleDatum = therefOne
-    let OracleDatum {
-      projectOwner,
-      projectName,
-      maxPercentageShare,
-      nftLink,
-      fundRequested,
-    } = orclDtm
-
-    // Here we are looking for the VALUE of ADA asset to retrieve the amount the user invests in project
-    expect Some(oneOutput) =
-      list.find(
-        outputs,
-        fn(output) { list.has(value.policies(output.value), #"") },
-      )
-    expect providedAmount = value.lovelace_of(oneOutput.value)
-    expect Some(ownersHash) = list.head(extra_signatories)
-
-    // Get the assets from the output of the transaction
-    expect Some(txOut) = list.head(outputs)
-    expect Some(txInput) = list.head(inputs)
-
-    expect [
-      (ada_policyid, ada_name, ada_amount),
-      (fract_policyid, fract_name, fract_amount),
-    ] =
-      txOut.value
-        |> value.flatten
-
+  fn lockTest(dt: TDatum, rd: TAction, ctx: ScriptContext) -> Bool {
     when rd is {
+      One -> True
+    }
+  }
+}
+
+validator {
+  fn lockValid(datum: LockDatum, rdmr: LockAction, ctx: ScriptContext) -> Bool {
+    // expect ScriptContext { transaction, purpose } = ctx
+
+    // // For provide funding, check signature and ratio between ada and fraction shares
+    // // We need access to inputs and outputs
+    // expect Transaction {
+    //   inputs,
+    //   outputs,
+    //   reference_inputs,
+    //   extra_signatories,
+    //   ..
+    // } = transaction
+
+    // expect Some(refInput) = list.head(reference_inputs)
+    // expect InlineDatum(therefOne) = refInput.output.datum
+    // expect orclDtm: OracleDatum = therefOne
+    // let OracleDatum {
+    //   projectOwner,
+    //   projectName,
+    //   maxPercentageShare,
+    //   nftLink,
+    //   fundRequested,
+    // } = orclDtm
+
+    // // Here we are looking for the VALUE of ADA asset to retrieve the amount the user invests in project
+    // expect Some(oneOutput) =
+    //   list.find(
+    //     outputs,
+    //     fn(output) { list.has(value.policies(output.value), #"") },
+    //   )
+    // expect providedAmount = value.lovelace_of(oneOutput.value)
+    // expect Some(ownersHash) = list.head(extra_signatories)
+
+    // // Get the assets from the output of the transaction
+    // expect Some(txOut) = list.head(outputs)
+    // expect Some(txInput) = list.head(inputs)
+
+    // expect [
+    //   (ada_policyid, ada_name, ada_amount),
+    //   (fract_policyid, fract_name, fract_amount),
+    // ] =
+    //   txOut.value
+    //     |> value.flatten
+
+    when rdmr is {
       ProvideFunding -> True
       WithdrawFund -> True
     }
