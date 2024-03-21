@@ -170,71 +170,69 @@ validator {
 
 validator {
   fn lockValid(datum: LockDatum, rdmr: LockAction, ctx: ScriptContext) -> Bool {
-    // expect ScriptContext { transaction, purpose } = ctx
+    expect ScriptContext { transaction, purpose } = ctx
 
     // // For provide funding, check signature and ratio between ada and fraction shares
     // // We need access to inputs and outputs
-    // expect Transaction {
-    //   inputs,
-    //   outputs,
-    //   reference_inputs,
-    //   extra_signatories,
-    //   ..
-    // } = transaction
+    expect Transaction {
+      inputs,
+      outputs,
+      reference_inputs,
+      extra_signatories,
+      ..
+    } = transaction
 
-    // expect Some(refInput) = list.head(reference_inputs)
-    // expect InlineDatum(therefOne) = refInput.output.datum
-    // expect orclDtm: OracleDatum = therefOne
-    // let OracleDatum {
-    //   projectOwner,
-    //   projectName,
-    //   maxPercentageShare,
-    //   nftLink,
-    //   fundRequested,
-    // } = orclDtm
+    // Get the oracleDTM from the reference inputs
+    trace @"extract oracle datum"
+    expect Some(refInput) = list.head(reference_inputs)
+    expect InlineDatum(therefOne) = refInput.output.datum
+    expect orclDtm: OracleDatum = therefOne
+    let OracleDatum {
+      projectOwner,
+      projectName,
+      maxPercentageShare,
+      nftLink,
+      fundRequested,
+    } = orclDtm
 
     // // Here we are looking for the VALUE of ADA asset to retrieve the amount the user invests in project
-    // expect Some(oneOutput) =
-    //   list.find(
-    //     outputs,
-    //     fn(output) { list.has(value.policies(output.value), #"") },
-    //   )
-    // expect providedAmount = value.lovelace_of(oneOutput.value)
-    // expect Some(ownersHash) = list.head(extra_signatories)
+    expect Some(oneOutput) =
+      list.find(
+        outputs,
+        fn(output) { list.has(value.policies(output.value), #"") },
+      )
+    expect providedAmount = value.lovelace_of(oneOutput.value)
+    expect Some(ownersHash) = list.head(extra_signatories)
 
     // // Get the assets from the output of the transaction
-    // expect Some(txOut) = list.head(outputs)
-    // expect Some(txInput) = list.head(inputs)
+    expect Some(txOut) = list.head(outputs)
+    expect Some(txInput) = list.head(inputs)
 
-    // expect [
-    //   (ada_policyid, ada_name, ada_amount),
-    //   (fract_policyid, fract_name, fract_amount),
-    // ] =
-    //   txOut.value
-    //     |> value.flatten
+    expect [
+      (ada_policyid, ada_name, ada_amount),
+      (fract_policyid, fract_name, fract_amount),
+    ] =
+      txOut.value
+        |> value.flatten
 
     when rdmr is {
-      ProvideFunding -> True
-      WithdrawFund -> True
-    }
-    // when rd is {
-    //   ProvideFunding ->
-    //     tx_signed_by(transaction, ownersHash)? && calculate_ratio(
-    //       fract_amount,
-    //       fundRequested,
-    //       providedAmount,
-    //     )?
-    //   // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
-    //   WithdrawFund -> {
-    //     let ownerCheck = projectOwner == ownersHash
-    //     let computationCheck =
-    //       value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(
-    //         txInput.output.value,
-    //       )
+      ProvideFunding ->
+        tx_signed_by(transaction, ownersHash)? && calculate_ratio(
+          fract_amount,
+          fundRequested,
+          providedAmount,
+        )?
+      // Project owner should be able to withdraw 10% of the funds in one transaction, not all.
+      WithdrawFund -> {
+        let ownerCheck = projectOwner == ownersHash
+        let computationCheck =
+          value.lovelace_of(txOut.value) * 10 <= value.lovelace_of(
+            txInput.output.value,
+          )
 
-    //     ownerCheck? && computationCheck?
-    //   }
-    // }
+        ownerCheck? && computationCheck?
+      }
+    }
   }
 }
 
